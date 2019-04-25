@@ -113,4 +113,4 @@ Lo sviluppo attuale è curato da INGLOBA360 s.r.l.
 Archimista è rilasciato sotto licenza GNU General Public License v2.0 o successive.
 
 ## Ringraziamenti
-Grazie a @Cavva79 per il primo docker-compose dal quale ho clonato questo progetto
+Grazie a @Cavva79 per il primo docker-compose dal quale ho clonato questo progetto.
