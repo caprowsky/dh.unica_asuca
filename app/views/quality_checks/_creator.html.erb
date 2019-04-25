@@ -1,0 +1,102 @@
+<h3 class="section">Requisiti minimi</h3>
+<table class="table">
+  <tr>
+    <th style="width:25%;"><%= t('creator_type') %></th>
+    <td>
+      <% if creator.creator_type.present? %>
+        <%= show_value(creator.creator_type, "t") %>
+      <% else %>
+        <%= warning_field %>
+      <%  end %>
+    </td>
+  </tr>
+  <% if creator.is_corporate? %>
+    <tr>
+      <th><%= t('creator_corporate_type') %></th>
+      <td>
+        <% if creator.creator_corporate_type.present? %>
+          <%= creator.creator_corporate_type.corporate_type.capitalize %>
+        <% else %>
+          <%= warning_field %>
+        <% end %>
+      </td>
+    </tr>
+  <% end -%>
+  <tr>
+    <th><%= t('preferred_name') %></th>
+    <td>
+      <% if creator.preferred_name.name.present? %>
+        <% if creator.preferred_name.name == '[nome non compilato]' %>
+          <span class="red"><%= creator.preferred_name.name %></span>
+        <% else %>
+          <%= creator.preferred_name.name %>
+        <% end %>
+      <% else %>
+        <%= warning_field %>
+      <% end %>
+    </td>
+  </tr>
+  <tr>
+    <th><%= t('date_event')%></th>
+    <td>
+      <% if creator.preferred_event.present? %>
+          <%= creator.preferred_event.full_display_date_with_place %>
+      <% else %>
+        <%= warning_field %>
+      <% end %>
+    </td>
+  </tr>
+</table>
+
+<%# Upgrade 3.0.0 inizio %>
+  <h4>1. <%= t('creator_history')  %> </h4>
+  <% if creator.history.present? %>
+    <p><i class="icon-ok-sign"></i> <%= raw(t('count.creator_history.success', :field => t('creator_history'))) %></p>
+  <% else %>
+    <table class="table">
+    <thead>
+        <tr>
+          <th style="width:90%;">&nbsp;</th>
+          <th>&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+            <td>
+              <%= raw(t('count.creator_history.failure', :field => t('creator_history'))) %>
+            </td>
+            <td>
+              <%= link_to 'modifica', edit_source_path(creator) %>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+<% end %>
+
+<h4>2. <%= t('sources')  %> </h4>
+  <%  cr_s = creator_source(creator.id)  %>
+  <% f = creator_fond(fond) %>
+  <% if cr_s.count.zero? %>
+    <p><i class="icon-exclamation-sign"></i> <%= raw(t('count.creator_sources.failure', :count => cr_s.count )) %></p>
+  <% else %>
+    <table class="table">
+    <thead>
+        <tr>
+          <th style="width:90%;">&nbsp;</th>
+          <th>&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+            <td>
+              <%= raw(t('count.creator_sources.success', :count => cr_s.count)) %>
+            </td>
+            <td>
+              <%= link_to 'modifica', treeview_fond_path(f) %>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+  <%  end %>
+<%# Upgrade 3.0.0 fine %>
+<hr style="border-width: 2px 0;">

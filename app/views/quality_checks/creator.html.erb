@@ -1,0 +1,12 @@
+<% content_for :status_bar do %>
+  <h2>Controllo qualità<%= path_separator %><%= t('creators') %></h2>
+  <div id="links">
+    <%= link_to_index "Controllo qualità", quality_checks_path %>
+  </div>
+<% end %>
+<div class="span12">
+<%# Upgrade 2.0.0 inizio %>
+  <%#= render :partial => "creator" %>
+  <%= render :partial => "creator", :object => @creator, as: "creator" %>
+<%# Upgrade 2.0.0 fine %>
+</div>

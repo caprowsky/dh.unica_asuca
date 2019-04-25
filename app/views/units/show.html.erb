@@ -1,0 +1,443 @@
+<% content_for :status_bar do %>
+  <h2><%= t('listing_units') %>:
+    <% @unit.fond.path_items.each do |item| %>
+      <%= link_to item.name, fond_units_path(item.id) %><%= path_separator %>
+    <% end %>
+    Anteprima scheda</h2>
+  <div id="links">
+    <%= link_to_index "Lista unità del livello", fond_units_path(@unit.fond_id) %>
+  </div>
+<% end %>
+
+<div class="span9">
+  <h3 class="section"><%= t('description_area') %></h3>
+  <table class="table-show">
+    <tr>
+      <th><%= t('level_type') %></th>
+      <td><%= show_value(@unit.level_type) %></td>
+    </tr>
+    <tr>
+      <th><%= t('sequence_number') %></th>
+      <td><%= @unit.display_sequence_number %></td>
+    </tr>
+    <tr>
+      <th><%= t('unit_type') %></th>
+      <td><%= show_value(@unit.unit_type) %></td>
+    </tr>
+<%# Upgrade 2.1.0 inizio %>
+    <% if @unit.sc2_tsk.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_tsk') %></th>
+        <td class="sc2_show_field_value">
+<%# Upgrade 2.2.0 inizio %>
+          <%#= show_value(@unit.sc2_tsk, "t") %>
+          <%= show_value("units_sc2_tsk." + @unit.sc2_tsk, "t") %>
+<%# Upgrade 2.2.0 fine %>
+        </td>
+      </tr>
+    <% end %>
+<%# Upgrade 2.1.0 fine %>
+    <tr>
+      <th><%= t('title') %></th>
+      <td><%= @unit.formatted_title %></td>
+    </tr>
+    <tr>
+      <th><%= t('date_event') %></th>
+      <td>
+        <% if @unit.events.present? %>
+          <% @unit.events.each do |ue| %>
+            <%= ue.full_display_date %>
+            <%= show_item(ue.note, ['[', ']']) %>
+          <% end %>
+        <% else %>
+          <%= blank_field %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th><%= t('tmp_reference_number') %></th>
+      <td><%= show_value(@unit.tmp_reference_number) %></td>
+    </tr>
+    <tr>
+      <th><%= t('tmp_reference_string') %></th>
+      <td><%= show_value(@unit.tmp_reference_string) %></td>
+    </tr>
+    <tr>
+      <th><%= t('reference_number') %></th>
+      <td><%= show_value(@unit.reference_number) %></td>
+    </tr>
+    <tr>
+      <th><%= t('content') %></th>
+      <td id="unit_content"><%= show_value(textilize(@unit.content)) %></td>
+    </tr>
+<%# Upgrade 2.2.0 inizio %>
+    <tr>
+      <th><%= t('unit_extent') %></th>
+      <td id="extent"><%= show_value(textilize(@unit.extent)) %></td>
+    </tr>
+<%# Upgrade 2.2.0 fine %>
+<%# Upgrade 2.1.0 inizio %>
+    <% if @unit.sc2_textual_elements.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_textual_elements') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_textual_elements.each do |item| %>
+              <% if item.isri.present? %>
+              <li><%= show_item(item.isri) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2_visual_elements.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_visual_elements') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_visual_elements.each do |item| %>
+              <% if item.stmd.present? %>
+              <li><%= show_item(item.stmd) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2.present? && @unit.sc2.sgti.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_sgti') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.sgti) %></td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2_authors.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_authors') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_authors.each do |item| %>
+              <%
+                s = ""
+                if item.autn.present? then s = item.autn end
+                if item.auta.present? then s = s + " " + item.auta end
+                if item.autr.present? then s = s + " (" + item.autr + ")" end
+
+                if item.sc2_attribution_reasons.present?
+                  s = s + "<div>" + t("sc2_attribution_reasons") + "<ul>"
+                  item.sc2_attribution_reasons.each do |m|
+                    if m.autm.present?
+                      s = s + "<li>" + m.autm.to_s + "</li>"
+                    end
+                  end
+                  s = s + "</ul></div>"
+                end
+              %>
+              <% if s != "" %>
+              <li><%= show_item(s) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2_commissions.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_commissions') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_commissions.each do |item| %>
+              <%
+                s = ""
+                if item.sc2_commission_names.present?
+                  s = s + "<div>" + t("sc2_commission_names") + "<ul>"
+                  item.sc2_commission_names.each do |m|
+                    if m.cmmn.present?
+                      s = s + "<li>" + m.cmmn.to_s + "</li>"
+                    end
+                  end
+                  s = s + "</ul></div>"
+                end
+                if item.cmmc.present? then s = s + "<div>" + item.cmmc + "</div>" end
+              %>
+              <% if s != "" %>
+              <li><%= show_item(s) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2.present? && @unit.sc2.cmmr.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_cmmr') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.cmmr) %></td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2.present? && @unit.sc2.lrc.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_lrc') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.lrc) %></td>
+      </tr>
+    <% end %>
+
+    <% if @unit.sc2.present? && @unit.sc2.lrd.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_lrd') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.lrd) %></td>
+      </tr>
+    <% end %>
+<%# Upgrade 2.1.0 fine %>
+    <tr>
+      <th><%= t('arrangement_note') %></th>
+      <td><%= show_value(textilize(@unit.arrangement_note)) %></td>
+    </tr>
+  </table>
+
+  <h3 class="section"><%= t('physical_description_area') %></h3>
+  <table class="table-show">
+    <tr>
+      <th><%= t('physical_type') %></th>
+      <td><%= show_value(@unit.physical_type) %></td>
+    </tr>
+    <tr>
+      <th><%= t('medium') %></th>
+      <td><%= show_value(@unit.medium) %></td>
+    </tr>
+<%# Upgrade 2.1.0 inizio %>
+    <% if @unit.sc2_techniques.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_techniques') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_techniques.each do |item| %>
+              <% if item.mtct.present? %>
+              <li><%= show_item(item.mtct) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.mtce.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_mtce') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.mtce) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2_scales.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_scales') %></th>
+        <td class="sc2_show_field_value">
+          <ul>
+            <% @unit.sc2_scales.each do |item| %>
+              <% if item.sca.present? %>
+              <li><%= show_item(item.sca) %></li>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.sdtt.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_sdtt') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.sdtt) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.sdts.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_sdts') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.sdts) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.dpgf.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_dpgf') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.dpgf) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.misa.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_misa') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.misa) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.misl.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_misl') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.misl) %></td>
+      </tr>
+    <% end %>
+    <% if @unit.sc2.present? && @unit.sc2.ort.present? %>
+      <tr>
+        <th class="sc2_show_field_caption"><%= t('sc2_ort') %></th>
+        <td class="sc2_show_field_value"><%= show_value(@unit.sc2.ort) %></td>
+      </tr>
+    <% end %>
+
+<%# Upgrade 2.1.0 fine %>
+    <tr>
+      <th><%= t('related_materials') %></th>
+      <td><%= show_value(textilize(@unit.related_materials)) %></td>
+    </tr>
+    <tr>
+      <th><%= t('unit_note') %></th>
+      <td><%= show_value(@unit.note) %></td>
+    </tr>
+    <tr>
+      <th><%= t('physical_container') %></th>
+      <td>
+
+        <%= t('physical_container_type') %>:
+        <% if @unit.physical_container_type.present? %>
+          <%= show_item(@unit.physical_container_type, ["", "<br />"]) %>
+        <% else %>
+          <%= blank_field %>
+          <br />
+        <% end -%>
+
+        <%= t('physical_container_title') %>:
+        <% if @unit.physical_container_title.present? %>
+          <%= show_item(@unit.physical_container_title, ["", "<br />"]) %>
+        <% else %>
+          <%= blank_field %>
+          <br />
+        <% end -%>
+
+        <%= t('physical_container_number') %>:
+        <%= show_value(@unit.physical_container_number) %>
+      </td>
+    </tr>
+    <tr>
+      <th><%= t('physical_description') %></th>
+      <td><%= show_value(textilize(@unit.physical_description)) %></td>
+    </tr>
+    <tr>
+      <th><%= t('preservation') %></th>
+      <td><%= show_value(@unit.preservation) %></td>
+    </tr>
+    <tr>
+      <th><%= t('preservation_note') %></th>
+      <td><%= show_value(textilize(@unit.preservation_note)) %></td>
+    </tr>
+    <tr>
+      <th><%= t('unit_damages') %></th>
+      <td>
+        <% if @unit.unit_damages.present? %>
+          <ul>
+            <% @unit.unit_damages.each do |damage| %>
+<%# Upgrade 2.1.0 inizio %>
+              <% if damage.code.present? %>
+              <li><%= show_item(damage.code) %></li>
+              <% end %>
+<%# Upgrade 2.1.0 fine %>
+            <% end %>
+          </ul>
+        <% else %>
+          <%= blank_field %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th><%= t('restoration') %></th>
+      <td><%= show_value(textilize(@unit.restoration)) %></td>
+    </tr>
+    <tr>
+      <th><%= t('unit_other_reference_numbers')%></th>
+      <td>
+        <% @unit.unit_other_reference_numbers.each do |iorn_name| %>
+          - <%= iorn_name.other_reference_number %> (<%= iorn_name.qualifier %>) | <%= t('note') %>: <%= iorn_name.note %><br />
+        <% end %>
+      </td>
+    </tr>
+  </table>
+
+<%# OPTIMIZE: i18n per lingue %>
+  <h3 class="section"><%= t('access_area') %></h3>
+  <table class="table-show">
+    <tr>
+      <th><%= t('unit_langs')%></th>
+      <td>
+        <% if @unit.unit_langs.present? %>
+          <ul>
+            <% @unit.unit_langs.each do |lang| %>
+              <li><%= show_item(lang.code) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <%= blank_field %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th><%= t('access_condition') %></th>
+      <td><%= show_value(@unit.access_condition) %></td>
+    </tr>
+    <tr>
+      <th><%= t('access_condition_note') %></th>
+      <td><%= show_value(textilize(@unit.access_condition_note)) %></td>
+    </tr>
+
+    <tr>
+      <th><%= t('use_condition') %></th>
+      <td><%= show_value(@unit.use_condition) %></td>
+    </tr>
+
+    <tr>
+      <th><%= t('use_condition_note') %></th>
+      <td><%= show_value(textilize(@unit.use_condition_note)) %></td>
+    </tr>
+
+    <tr>
+      <th><%= t('unit_urls')%></th>
+      <td>
+        <% if @unit.unit_urls.present? %>
+          <ul>
+            <% @unit.unit_urls.each do |u_name| %>
+							<li><%= link_to_unless(APP_EDITION == "standalone",u_name.url, u_name.url, { target: "_blank" }) %> <%= show_item(u_name.note, ["[","]"]) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <%= blank_field %>
+        <% end %>
+      </td>
+    </tr>
+
+    <tr>
+      <th><%= t('unit_identifiers')%></th>
+      <td>
+        <% if @unit.unit_identifiers.present? %>
+          <ul>
+            <% @unit.unit_identifiers.each do |fi_name| %>
+              <li><%= show_item(fi_name.identifier) %> <%= show_item(fi_name.identifier_source, ["(",")"]) %> <%= show_item(fi_name.note, ["[","]"]) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <%= blank_field %>
+        <% end %>
+      </td>
+    </tr>
+  </table>
+
+<%# Upgrade 2.0.0 inizio %>
+  <%#= render :partial => "shared/show_sources", :object => @unit.sources %>
+  <%#= render :partial => "shared/show_editors", :object => @unit.unit_editors %>
+  <%= render :partial => "shared/show_sources", :object => @unit.sources, as: "object" %>
+  <%= render :partial => "shared/show_editors", :object => @unit.unit_editors, as: "object" %>
+<%# Upgrade 2.0.0 fine %>
+
+  <div id="add-heading-container"></div>
+  <div id="link-heading-container"></div>
+
+</div>
+
+<%# Upgrade 2.0.0 inizio %>
+<%#= render :partial => "shared/side", :object => @unit %>
+<%= render :partial => "shared/side", :object => @unit, as: "object" %>
+<%# Upgrade 2.0.0 fine %>

@@ -1,0 +1,17 @@
+<% if object.errors.any? %>
+<div class="span9">
+  <div class="alert alert-error">
+    <a class="close" data-dismiss="alert">×</a>
+    <%= t('activerecord.generic_record_invalid') %>
+    <%# OPTIMIZE: aggiungere errors di events %>
+<%# Upgrade 2.1.0 inizio %>
+    <ul>
+      <% object.errors.each do |key, message| %>
+        <li><%= t(key) %></li>
+        <li><%= message.to_s %></li>
+      <% end %>
+    </ul>
+<%# Upgrade 2.1.0 fine %>
+  </div>
+</div>
+<% end %>

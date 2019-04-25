@@ -1,0 +1,32 @@
+version: '3'
+services:
+    dbMy:
+        image: mysql:5.7.21
+        environment:
+            MYSQL_ROOT_PASSWORD: generic_password
+        ports:
+            - '3307:3306'
+        volumes:
+            - archimista-mysql:/var/lib/mysql
+        container_name: asuca_db
+        networks:
+            new:
+    web:
+        build: .
+        volumes:
+          - ./:/home/app/webapp
+        ports:
+          - "8000:80"
+        depends_on:
+          # - dbPg
+          - dbMy
+        container_name: asuca_webapp
+        networks:
+            new:
+
+volumes:
+    archimista-mysql:
+    archimista-webapp:
+
+networks:
+    new:

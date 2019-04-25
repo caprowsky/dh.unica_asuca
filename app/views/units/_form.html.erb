@@ -1,0 +1,491 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag 'units-full_path' %>
+  <%= javascript_include_tag "relations" %>
+  <%= javascript_include_tag "live_search" %>
+  <%= javascript_include_tag "sources" %>
+
+<%# Upgrade 2.1.0 inizio %>
+  <%= javascript_include_tag "units-sc" %>
+<%# Upgrade 2.1.0 fine %>
+<% end %>
+
+<%# Upgrade 2.0.0 inizio %>
+<%#= render :partial => "shared/generic_error_message", :object => @unit %>
+<%= render :partial => "shared/generic_error_message", object: @unit, as: "object" %>
+<%# Upgrade 2.0.0 fine %>
+
+<%# Upgrade 2.1.0 inizio %>
+  <% @sc2 = @unit.sc2 || @unit.build_sc2 %>
+<%# Upgrade 2.1.0 fine %>
+
+<%# TAI aggiunto = prima di form_for %>
+<%= form_for @unit do |f| %>
+  <%= f.hidden_field :parent_id,  :value => @unit.parent_id %>
+  <%= f.hidden_field :fond_id,    :value => @unit.fond_id %>
+  <%# TODO: spostare in callback before_save %>
+  <%= f.hidden_field :tsk, :value => "" %>
+
+  <div id="record-main" class="span9">
+    <div class="tabbable">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#tab-description" data-toggle="tab"><%= t('description_area') %></a></li>
+        <li><a href="#tab-physical_description" data-toggle="tab"><%= t('physical_description_area') %></a></li>
+        <li><a href="#tab-access" data-toggle="tab"><%= t('access_area') %></a></li>
+        <li><a href="#tab-sources" data-toggle="tab"><%= t('sources_area')%></a></li>
+        <li><a href="#tab-credits" data-toggle="tab"><%= t('editors') %></a></li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="tab-description">
+  <%# FIXME: codice attuale impedisce che venga triggerato correttamente askCofirm if form unsaved %>
+          <div class="row">
+            <div id="unit-path-wrapper" class="span9">
+              <div class="well">
+                <%= render :partial => 'full_path_controls', :object => @unit %>
+                <h3 id="unit-path-title"><%= t('unit_full_path') %></h3>
+                <div id="unit-path-content">
+                  <%= render :partial => 'full_path', :locals => {:unit => @unit, :full_path => @full_path} %>
+                </div>
+                <% if @unit.is_root? %>
+                  <div id="unit-path-tree-wrapper">
+                    <div id="unit-path-tree">
+    <%# filled by jsTree %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+<%# Upgrade 2.1.0 inizio %>
+<%# Upgrade 3.0.0 inizio %>
+<%# Inserito label per flag published %>
+          <div class="row">
+            <div class="span4"><%= f.label :unit_type, t('unit_type') %></div>
+            <div class="span4 sc2_container"><%= f.label :sc2_tsk,  t('sc2_tsk'), {:id => "lbl_unit_sc2_tsk", :class => "sc2_field_label" } %></div>
+            <div class="span1"><%= f.label :published, t('published') %></div>
+          </div>
+          <div class="row">
+            <div class="span4"><%= terms_select(f, "units.unit_type", {:include_blank => true}, :class => "span4" )%></div>
+            <div class="span4 sc2_container">
+<%# Upgrade 2.2.0 inizio %>
+              <%#= sc2_terms_select(f, "units.sc2_tsk", nil, {:include_blank => true, :id => "sc2_tsk", :selected => @unit.sc2_tsk}, :class => "span4 sc2_field") %>
+              <%= sc2_terms_select(f, "units.sc2_tsk", nil, "units_sc2_tsk", {:include_blank => true, :id => "sc2_tsk", :selected => @unit.sc2_tsk}, :class => "span4 sc2_field") %>
+<%# Upgrade 2.2.0 fine %>
+            </div>
+<%# Inserito checkbox published %>
+            <div class="span1"><%= check_box("unit", "published")%></div>
+<%# Upgrade 3.0.0 fine %>            
+          </div>
+<%# Upgrade 2.1.0 fine %>
+
+          <div class="row">
+            <div class="span8"><%= f.label :title, t('title') %></div>
+            <div class="span1"><%= f.label :given_title, t('unit_given_title') %></div>
+          </div>
+          <div class="row">
+            <div class="span8"><%= f.text_field :title, :class => "span8" %></div>
+            <div class="span1 center"><%= f.check_box :given_title %></div>
+          </div>
+
+          <%= render :partial => "events/form", :locals => {:entity_form => f, :events => @events} %>
+
+          <%= f.label :content, t('content') %>
+          <%= f.text_area :content, :class => "textile long-content span9" %>
+
+<%# Upgrade 2.2.0 inizio %>
+          <%= f.label :extent, t('unit_extent') %>
+          <%= f.text_area :extent, :class=> "x-short-content span9" %>
+<%# Upgrade 2.2.0 fine %>
+
+<%# Upgrade 2.1.0 inizio %>
+          <div id="unit_sc2_textual_elements" class="row sc2_container sc2_multi_instance sc2_all">
+            <% @sc2_textual_elements = build_or_retrieve(f.object.sc2_textual_elements) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('sc2_textual_elements') %></h3>
+              <%= f.fields_for :sc2_textual_elements do |id_form| %>
+                <%= render :partial => "sc2_textual_element", :locals => { :f => id_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_textual_elements'), "unit_sc2_textual_elements" %></p>
+            </div>
+          </div>
+
+          <div id="unit_sc2_visual_elements" class="row sc2_container sc2_multi_instance sc2_all">
+            <% @sc2_visual_elements = build_or_retrieve(f.object.sc2_visual_elements) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('sc2_visual_elements') %></h3>
+              <%= f.fields_for :sc2_visual_elements do |id_form| %>
+                <%= render :partial => "sc2_visual_element", :locals => { :f => id_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_visual_elements'), "unit_sc2_visual_elements" %></p>
+            </div>
+          </div>
+
+          <%= f.fields_for :sc2 do |id_form| %>
+            <div class="sc2_container sc2_all">
+              <%= id_form.label :sgti, t('sc2_sgti') %>
+              <%= id_form.text_field :sgti, :class => "span8 sc2_field" %>
+            </div>
+          <% end %>
+
+          <div id="unit_sc2_authors" class="sc2_container sc2_multi_instance sc2_all">
+            <% @sc2_authors = build_or_retrieve(f.object.sc2_authors) %>
+            <div>
+              <h3 class="row-header"><%= t('sc2_authors') %></h3>
+							<% idx = 0 %>
+              <%= f.fields_for :sc2_authors do |id_form| %>
+                <%= render :partial => "sc2_author", :locals => { :f => id_form, :author_index => idx } %>
+								<% idx += 1 %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_authors'), "unit_sc2_authors", "sc2_authors_attributes" %></p>
+            </div>
+          </div>
+
+          <div id="unit_sc2_commissions" class="sc2_container sc2_multi_instance sc2_all">
+            <% @sc2_commissions = build_or_retrieve(f.object.sc2_commissions) %>
+            <div>
+              <h3 class="row-header"><%= t('sc2_commissions') %></h3>
+							<% idx = 0 %>
+              <%= f.fields_for :sc2_commissions do |id_form| %>
+                <%= render :partial => "sc2_commission", :locals => { :f => id_form, :commission_index => idx } %>
+								<% idx += 1 %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_commissions'), "unit_sc2_commissions", "sc2_commissions_attributes" %></p>
+            </div>
+          </div>
+
+          <%= f.fields_for :sc2 do |id_form| %>
+            <div class="sc2_container sc2_dt">
+              <%= id_form.label :cmmr, t('sc2_cmmr') %>
+              <%= id_form.text_field :cmmr, :class => "span8 sc2_field" %>
+            </div>
+
+            <div class="sc2_container sc2_f">
+              <%= id_form.label :lrc, t('sc2_lrc') %>
+              <%= id_form.text_field :lrc, :class => "span8 sc2_field" %>
+            </div>
+
+            <div class="sc2_container sc2_f">
+              <%= id_form.label :lrd, t('sc2_lrd') %>
+              <%= id_form.text_field :lrd, :class => "span4 sc2_field" %>
+            </div>
+          <% end %>
+<%# Upgrade 2.1.0 fine %>
+
+          <h3 class="row-header">Segnature</h3>
+          <div class="row">
+            <div class="span3"><%= f.label :tmp_reference_number, t('tmp_reference_number') %></div>
+            <div class="span6"><%= f.label :tmp_reference_string, t('tmp_reference_string') %></div>
+          </div>
+          <div class="row">
+            <div class="span3"><%= f.text_field :tmp_reference_number, :class => "span3" %></div>
+            <div class="span6"><%= f.text_field :tmp_reference_string, :class => "span6" %></div>
+          </div>
+          <div class="row">
+            <div class="span3"><%= f.label :folder_number, t('folder_number') %></div>
+<%# Upgrade 2.2.0 inizio %>
+<%# da span3 a span2 %>
+            <div class="span2"><%= f.label :file_number, t('file_number') %></div>
+<%# da span1 a span2; + style %>
+            <div class="span2" style="width: 100px; margin-left: 5px;">&nbsp;</div>
+<%# da span2 a span3; + style %>
+            <div class="span3" style="width: 200px; margin-left: 5px;"><%= f.label :reference_number, t('reference_number') %></div>
+<%# Upgrade 2.2.0 fine %>
+          </div>
+          <div class="row">
+            <div class="span3"><%= f.text_field :folder_number, :class => "span3" %></div>
+<%# Upgrade 2.2.0 inizio %>
+<%# da span3 a span2 %>
+            <div class="span2"><%= f.text_field :file_number, :class => "span2" %></div>
+<%# da span1 a span2 %>
+            <div class="span2" style="width: 100px; margin-left: 5px;">
+<%# Upgrade 2.2.0 fine %>
+              <%= link_to t('create_reference_number'), '#', :id => 'create_reference_number', :class => 'btn btn-small' %>
+<%# Upgrade 2.2.0 inizio %>
+              <%= link_to raw("<i class=\"icon-cog\"></i>"), "#create-unit-reference-number-options-dialog", { :"data-toggle" => "modal", :class => "btn btn-small" } %>
+<%# Upgrade 2.2.0 fine %>
+            </div>
+<%# Upgrade 2.2.0 inizio %>
+<%# da span2 a span3; + style %>
+            <div class="span3" style="width: 200px; margin-left: 5px;"><%= f.text_field :reference_number, :class => "span3", :style => "width: 200px;"  %></div>
+<%# Upgrade 2.2.0 fine %>
+          </div>
+
+          <%= f.label :arrangement_note, t('arrangement_note') %>
+          <%= f.text_area :arrangement_note, :class => "textile short-content span9" %>
+        </div> <%# /tab-description %>
+
+        <div class="tab-pane" id="tab-physical_description">
+<%# Upgrade 2.1.0 inizio %>
+          <div id="div_physical_type_wrapper">
+          <div class="row">
+            <div class="span3"><%= f.label :physical_type, t('physical_type') %></div>
+          </div>
+          <div class="row">
+            <div class="span3"><%= terms_select(f, "units.physical_type", {:include_blank => true}, :class => "span3") %></div>
+          </div>
+          </div>
+
+          <div class="sc2_voc_ref_container sc2_all">
+            <div class="sc2_openedvoc_link_wrapper">
+              <label for="unit_medium" class="sc2_openedvoc_label"><%= t('medium')%></label>
+              <a href="javascript:void(0)" class="sc2_openedvoc_link sc2_voc_add_empty sc2_all" data_voc_name="units.medium" data_voc_caption="<%= t('medium')%>" data-toggle="modal"><%= t('sc2_openedvoc') %></a>
+            </div>
+            <%= f.text_field :medium, :class => "span7 sc2_voc" %>
+          </div>
+
+          <div id="unit_sc2_techniques" class="row sc2_container sc2_multi_instance sc2_cars sc2_d sc2_dt sc2_s">
+            <% @sc2_techniques = build_or_retrieve(f.object.sc2_techniques) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('sc2_techniques') %></h3>
+              <%= f.fields_for :sc2_techniques do |id_form| %>
+                <%= render :partial => "sc2_technique", :locals => { :f => id_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_techniques'), "unit_sc2_techniques" %></p>
+            </div>
+          </div>
+
+          <%= f.fields_for :sc2 do |id_form| %>
+            <div class="sc2_container sc2_voc_ref_container sc2_dt">
+              <div class="sc2_openedvoc_link_wrapper">
+                <label for="unit_sc2_attributes_mtce" class="sc2_openedvoc_label"><%= t('sc2_mtce')%></label>
+                <a href="javascript:void(0)" class="sc2_openedvoc_link sc2_voc_add_empty sc2_dt" data_voc_name="sc2.mtce" data_voc_caption="<%= t('sc2_mtce')%>" data-toggle="modal"><%= t('sc2_openedvoc') %></a>
+              </div>
+              <%= id_form.text_field :mtce, :class => "span7 sc2_field sc2_voc" %>
+            </div>
+          <% end %>
+
+          <div id="unit_sc2_scales" class="row sc2_container sc2_multi_instance sc2_cars sc2_dt">
+            <% @sc2_scales = build_or_retrieve(f.object.sc2_scales) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('sc2_scales') %></h3>
+              <%= f.fields_for :sc2_scales do |id_form| %>
+                <%= render :partial => "sc2_scale", :locals => { :f => id_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_sc2_scales'), "unit_sc2_scales" %></p>
+            </div>
+          </div>
+
+          <%= f.fields_for :sc2 do |id_form| %>
+            <div class="sc2_container sc2_voc_ref_container sc2_cars sc2_dt">
+              <div class="sc2_openedvoc_link_wrapper">
+                <label for="unit_sc2_attributes_sdtt" class="sc2_openedvoc_label"><%= t('sc2_sdtt')%></label>
+                <a href="javascript:void(0)" class="sc2_openedvoc_link sc2_voc_add_empty sc2_cars sc2_dt" data_voc_name="sc2.sdtt" data_voc_caption="<%= t('sc2_sdtt')%>" data-toggle="modal"><%= t('sc2_openedvoc') %></a>
+              </div>
+              <%= id_form.text_field :sdtt, :class => "span7 sc2_field sc2_voc" %>
+            </div>
+
+            <div class="sc2_container sc2_voc_ref_container sc2_cars">
+              <div class="sc2_openedvoc_link_wrapper">
+                <label for="unit_sc2_attributes_sdts" class="sc2_openedvoc_label"><%= t('sc2_sdts')%></label>
+                <a href="javascript:void(0)" class="sc2_openedvoc_link sc2_voc_add_empty sc2_cars" data_voc_name="sc2.sdts" data_voc_caption="<%= t('sc2_sdts')%>" data-toggle="modal"><%= t('sc2_openedvoc') %></a>
+              </div>
+              <%= id_form.text_field :sdts, :class => "span7 sc2_field sc2_voc" %>
+            </div>
+
+            <div class="sc2_container sc2_dt">
+              <div class="row">
+                <div class="span4"><%= id_form.label :dpgf, t('sc2_dpgf') %></div>
+              </div>
+              <div class="row">
+                <div class="span7"><%= id_form.text_field :dpgf, :class => "span7 sc2_field" %></div>
+              </div>
+            </div>
+
+            <div class="sc2_container sc2_all">
+              <h3 class="row-header"><%= t('sc2_measures') %></h3>
+              <div class="row">
+                <div class="span4"><%= id_form.label :misa, t('sc2_misa') %></div>
+                <div class="span4"><%= id_form.label :misl, t('sc2_misl') %></div>
+              </div>
+              <div class="row">
+                <div class="span4"><%= id_form.text_field :misa, :class => "span4 sc2_field" %></div>
+                <div class="span4"><%= id_form.text_field :misl, :class => "span4 sc2_field" %></div>
+              </div>
+            </div>
+
+            <div class="sc2_container sc2_cars">
+              <%= id_form.label :ort, t('sc2_ort') %>
+              <%= id_form.text_field :ort, :class => "span7 sc2_field" %>
+            </div>
+          <% end %>
+<%# Upgrade 2.1.0 fine %>
+
+          <%= f.label :related_materials, t('related_materials') %>
+          <%= f.text_area :related_materials, :class => "textile medium-content span9" %>
+
+          <%= f.label :physical_description, t('physical_description') %>
+          <%= f.text_area :physical_description, :class => "textile medium-content span9" %>
+
+          <h3 class="row-header">
+            <%= t('preservation') %>
+          </h3>
+          <%= terms_select(f, "units.preservation", {:include_blank => true}, {:class => "span2"}) %>
+
+          <%= f.label :preservation_note, t('preservation_note') %>
+          <%= f.text_area :preservation_note, :class => "textile short-content span9" %>
+
+          <div id="unit_unit_damages" class="row">
+            <% @unit_damages = build_or_retrieve(f.object.unit_damages) %>
+            <div class="span9">
+              <h3 class="row-header">
+                <%= t('unit_damages') %>
+              </h3>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_damages do |id_form| %>
+                <%= render :partial => "unit_damage", :locals => { :f => id_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_damage'), "unit_unit_damages" %></p>
+            </div>
+          </div>
+
+          <%= f.label :restoration, t('restoration') %>
+          <%= f.text_area :restoration, :class => "textile short-content span9" %>
+
+          <%= f.label :note, t('unit_note') %>
+          <%= f.text_area :note, :class => "short-content span9" %>
+
+          <h3 class="row-header">
+            <%= t('physical_container') %>
+          </h3>
+          <div class="row">
+            <div class="span3"><%= f.label :physical_container_type, t('physical_container_type') %></div>
+            <div class="span3"><%= f.label :physical_container_title, t('physical_container_title') %></div>
+            <div class="span3"><%= f.label :physical_container_number, t('physical_container_number') %></div>
+          </div>
+          <div class="row">
+            <div class="span3"><%= f.text_field :physical_container_type %></div>
+            <div class="span3"><%= f.text_field :physical_container_title %></div>
+            <div class="span3"><%= f.text_field :physical_container_number %></div>
+          </div>
+
+          <div id="unit_other_reference_numbers" class="row">
+            <% @unit_other_reference_numbers = build_or_retrieve(f.object.unit_other_reference_numbers) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('unit_other_reference_numbers') %></h3>
+              <div class="row row-labels">
+                <div class="span3"><%= t('unit_other_reference_numbers') %></div>
+                <div class="span3"><%= t('qualifier') %></div>
+                <div class="span2"><%= t('note') %></div>
+              </div>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_other_reference_numbers do |iorn_form| %>
+                <%= render :partial => "unit_other_reference_number", :locals => { :f => iorn_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_unit_other_reference_numbers'), "unit_other_reference_numbers" %></p>
+            </div>
+          </div>
+        </div>  <%# /tab-physical_description %>
+
+        <div class="tab-pane" id="tab-access">
+          <div id="unit_unit_langs" class="row">
+            <% @unit_langs = build_or_retrieve(f.object.unit_langs) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('unit_langs') %></h3>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_langs do |fl_form| %>
+                <%= render :partial => "unit_lang", :locals => { :f => fl_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_unit_lang'), "unit_unit_langs" %></p>
+            </div>
+          </div>
+
+          <%= f.label :access_condition, t('access_condition') %>
+          <%= terms_select(f, "units.access_condition", {:include_blank => true}, {:class => "span4"}) %>
+
+          <%= f.label :access_condition_note, t('access_condition_note') %>
+          <%= f.text_area :access_condition_note,
+            :class => "textile medium-content wordcount span9",
+            :"data-count" =>"access_condition_note-1000" %>
+          <span class="counter" id="counter-access_condition_note">&nbsp;</span>
+
+          <%= f.label :use_condition, t('use_condition') %>
+          <%= terms_select(f, "units.use_condition", {:include_blank => true}, {:class => "span4"}) %>
+
+          <%= f.label :use_condition_note, t('use_condition_note') %>
+          <%= f.text_area :use_condition_note,
+            :class => "textile medium-content wordcount span9",
+            :"data-count" =>"use_condition_note-1000"  %>
+          <span class="counter" id="counter-use_condition_note">&nbsp;</span>
+
+          <div id="unit_urls" class="row">
+            <% @unit_urls = build_or_retrieve(f.object.unit_urls) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('unit_urls') %></h3>
+              <div class="row row-labels">
+                <div class="span5"><%= t('url') %></div>
+                <div class="span3"><%= t('note') %></div>
+              </div>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_urls do |cf_form| %>
+                <%= render :partial => "unit_url", :locals => { :f => cf_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_url'), "unit_urls" %></p>
+            </div>
+          </div> <%# unit_urls %>
+
+          <div id="unit_identifiers" class="row">
+            <% @unit_identifiers = build_or_retrieve(f.object.unit_identifiers) %>
+            <div class="span9">
+              <h3 class="row-header"><%= t('unit_identifiers') %></h3>
+              <div class="row row-labels">
+                <div class="span3"><%= t('identifier') %></div>
+                <div class="span2"><%= t('identifier_source') %></div>
+                <div class="span3"><%= t('note') %></div>
+              </div>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_identifiers do |cf_form| %>
+                <%= render :partial => "unit_identifier", :locals => { :f => cf_form } %>
+              <% end %>
+              <p><%= add_child_link t('new_identifier'), "unit_identifiers" %></p>
+            </div>
+          </div> <%# unit_identifiers %>
+        </div> <%# <tab-access /> %>
+
+        <div class="tab-pane" id="tab-sources">
+          <%= render_relation_for f, :sources, @rel_unit_sources,
+            :variant => 'livesearch',
+            :selected_label_full => lambda{|rel_unit_source| formatted_source(rel_unit_source.source)  },
+            :selected_label_short => lambda{|rel_unit_source| h rel_unit_source.source.short_title } %>
+        </div> <%# <tab-sources /> %>
+
+        <div class="tab-pane" id="tab-credits">
+          <div id="unit_editors" class="row">
+            <% @unit_editors = build_or_retrieve(f.object.unit_editors) %>
+            <div class="span9 row-header">
+              <a id="add-editor-modal" class="btn btn-mini pull-right" href="#">  <%= t('new_editor') %></a>
+              <h3 class="row-header"><%= t('unit_editors') %></h3>
+            </div>
+            <div class="span9">
+              <%= render :partial => "shared/editors_labels", :locals => { :f => f } %>
+<%# TAI aggiunto = prima di fields_for %>
+              <%= f.fields_for :unit_editors do |dfe_form| %>
+                <%= render :partial => "shared/editor", :locals => { :f => dfe_form } %>
+              <% end %>
+              <p><%= add_child_link t('add_editor'), "unit_editors" %></p>
+            </div>
+          </div>
+        </div> <!-- /tab-credits -->
+      </div> <!-- /tab-content -->
+    </div> <!-- /tab-tabbbable -->
+  </div>  <!-- /record-main -->
+
+<%# Upgrade 2.0.0 inizio %>
+  <%#= render :partial => "shared/side", :object => @unit %>
+  <%= render :partial => "shared/side", :object => @unit, as: "object" %>
+<%# Upgrade 2.0.0 fine %>
+
+<% end %>
+
+<div id="add-editor-container"></div>
+
+<div id="add-heading-container"></div>
+<div id="link-heading-container"></div>
+
+<%# Upgrade 2.1.0 inizio %>
+    <%= render :partial => 'sc2_openedvoc' %>
+<%# Upgrade 2.1.0 fine %>
+
+<%# Upgrade 2.2.0 inizio %>
+    <%= render :partial => 'create_unit_reference_number_options' %>
+<%# Upgrade 2.2.0 fine %>

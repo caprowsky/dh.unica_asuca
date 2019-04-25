@@ -1,0 +1,186 @@
+<% content_for :status_bar do %>
+  <h2><%= t('listing_fonds') %></h2>
+<% end %>
+
+<%# Upgrade 3.0.0 inizio %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "jsTree/jquery.jstree.min" %>
+<% end %>
+<%# Upgrade 3.0.0 fine %>
+
+<div class="span12">
+  <div id="index-controls">
+<%# Upgrade 2.2.0 inizio %>
+    <%# if @fonds.total_entries > Fond.per_page || params[:q].present? %>
+    <% if true %>
+<%# Upgrade 2.2.0 fine %>
+      <% # OPTIMIZE: questo forse potrebbe stare in helper, se ripetuto in tutti gli index %>
+<%# TAI aggiunto = prima di form_tag %>
+      <%= form_tag('/fonds', :method => :get, :class => "skip-prompt form-search pull-right") do %>
+        <%= text_field_tag :q, params[:q], :class => "search-query", :placeholder => "Denominazione" %>
+        <%= submit_tag "Cerca", :name => "", :class => "btn btn-small" %>
+      <% end %>
+    <% end %>
+    <% # OPTIMIZE: qui forse div contenitore toolbar o buttons ? %>
+    <%= link_to t('new'), "#add_fond_modal", {:"data-toggle" => "modal", :class => "btn btn-small new"} %>
+<%# Upgrade 2.0.0 inizio %>
+    <%#= link_to '<i class="icon-share"></i> ' + t('import_tree'), save_a_tree_fonds_path, { :class => "btn btn-small" } %>
+    <%= link_to raw('<i class="icon-share"></i> ' + t('import_tree')), save_a_tree_fonds_path, { :class => "btn btn-small" } %>
+<%# Upgrade 2.0.0 fine %>
+    <%= render :partial => "new_fond" %>
+  </div>
+
+  <% if @fonds.size > 0 %>
+    <%= display_page_entries_info @fonds %>
+
+<%# Upgrade 2.2.0 inizio %>
+    <% class_name = if current_user.is_multi_group_user?() || current_user.is_superadmin?() then "span6" else "span7" end %>
+<%# Upgrade 2.2.0 fine %>
+
+    <table class="table table-sortable">
+      <thead>
+        <tr>
+<%# Upgrade 2.2.0 inizio %>
+<%# inserito class_name e cambiato nome campo da name a fonds.name %>
+          <th class="<%= class_name %>"><%= sortable("fonds.name", t('name')) %></th>
+<%# Upgrade 2.2.0 fine %>
+<%# Upgrade 2.2.0 inizio %>
+<%# Upgrade 3.0.0 inizio %>
+<%# aggiunta colonna per status pubblicazione %>
+          <th>&nbsp;</th>
+<%# Upgrade 3.0.0 fine %>
+          <% if current_user.is_multi_group_user?() || current_user.is_superadmin?() %>
+            <th class="span2"><%= sortable("groups.short_name", t('list_group_short_name')) %></th>
+          <% end %>
+<%# cambiato nome campo da updated_at a fonds.updated_at %>
+          <th class="span2"><%= sortable("fonds.updated_at", t('updated_at')) %></th>
+<%# Upgrade 2.2.0 fine %>
+          <th>&nbsp;</th>
+          <th>&nbsp;</th>
+<%# Upgrade 3.0.0 inizio %>
+<%# aggiunta colonna per azione Dividi %>
+<%# aggiunta colonna per azione Pubblica %>
+          <th>&nbsp;</th>
+          <th>&nbsp;</th>
+<%# Upgrade 3.0.0 fine %>
+          <th>&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @fonds.each do |fond| %>
+          <tr class="<%= cycle("odd", "even") %>">
+            <td>
+              <%= link_to fond.name, treeview_fond_path(fond) %>
+              <%= fond.preferred_event.try(:full_display_date) %>
+              <% if fond.fond_type.present? %>
+                <span class="light">(<%= fond.fond_type %>)</span>
+              <% end %>
+              <%# FIXME: rivedere e impostare classe css astratta %>
+              <p class="fond-units">
+                <i class='icon-list-alt'></i>
+<%# Upgrade 3.0.0 inizio %>
+<%# aggiunta gestione permessi su visualizzazione unità %>				
+                <% if can? :manage, fond %>
+                  <%= link_to "#{number_with_delimiter(@units_counts[fond.id] || "0")} unità", fond_units_path(fond) %>
+                <% else %>
+                  <%= "#{number_with_delimiter(@units_counts[fond.id] || "0")} unità" %>
+                <% end %>
+<%# Upgrade 3.0.0 fine %>				
+              </p>            
+<%# Upgrade 2.2.0 inizio %>
+              <div class="index-item-info">
+                <% if fond.projects.present? %>
+                  <%= t('projects') %>
+                  <ul class="index-item-list">
+                    <% fond.projects.each do |project| %>
+                      <li><%= link_to "#{project.name}", edit_project_path(project) %> <%= project.display_date %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </div>
+<%# Upgrade 2.2.0 fine %>
+            </td>
+<%# Upgrade 3.0.0 inizio %>
+<%# aggiunta visualizzazione stato pubblicazione %>
+            <td><%= if fond.published == true then t('published') else  t('unpublished') end %></td>
+<%# Upgrade 3.0.0 fine %>            
+<%# Upgrade 2.2.0 inizio %>
+            <% if current_user.is_multi_group_user?() || current_user.is_superadmin?() %>
+              <td style="font-size: 11px;"><%= fond.group.short_name %></td>
+            <% end %>
+<%# Upgrade 2.2.0 fine %>
+            <td><%= l fond.updated_at, :format => :long %></td>
+            <td><%= link_to t('show'), fond %></td>
+<%# Upgrade 3.0.0 inizio %>            
+<%# aggiunta gestione permessi su funzionalità unisci %> 
+            <% if can? :manage, fond %>
+              <td class="action">
+              <%= link_to_if(@fonds.size > 1, t('merge_with'), '#', {:class => 'merge', :"data-id" => fond.id})%>
+            <% else %>
+              <td class="muted">
+              <%= t('merge_with') %>
+            <% end %> 
+            </td>  
+<%# Upgrade 3.0.0 fine %>
+<%# Upgrade 3.0.0 inizio %>
+<%# aggiunto link di divisione fondo e gestione permessi %> 
+            <% if can? :manage, fond %>
+              <td class="action">
+                <%= f = Fond.find(fond.id)
+                link_to_unless(!f.children?, t('split_fond'), '#' , {:class => 'fondsplit', :"data-id" => fond.id}) do |name| raw("<span class='muted' title='Il complesso non è divisibile.'>#{name}</span>") end %>
+            <% else %>
+              <td class="muted">
+                <%= t('split_fond') %>
+            <% end %> 
+            </td> 
+<%# aggiunto link di pubblicazione %>  
+            <% if fond.published == true %>  
+              <% if can? :manage, fond %>
+                <td class="action">
+                <%= link_to t('unpublish'), unpublish_fond_path({:id => fond.id}), data: {:confirm => t('are_you_sure')}, method: 'put'%>
+              <% else %>
+                <td class="muted">
+                <%= t('unpublish') %>
+              <% end %> 
+            </td>
+            <% else %>
+              <% if can? :manage, fond %>
+                <td class="action">
+                <%= link_to t('publish'), publish_fond_path({:id => fond.id}), data: {:confirm => t('are_you_sure')}, method: 'put'%>
+              <% else %>
+                <td class="muted">
+                <%= t('publish') %>
+              <% end %> 
+              </td>
+            <% end %>  
+<%# Upgrade 3.0.0 fine %>  
+            <td>
+<%# Upgrade 2.0.0 inizio %>
+              <%#= link_to_unless(@units_counts[fond.id], t('destroy'), fond, :confirm => t('are_you_sure'), :method => :delete) do |name| raw("<span class='muted' title='Per poter eliminare il complesso devi prima eliminare le unità collegate.'>#{name}</span>") end %>
+              <%= link_to_unless(@units_counts[fond.id], t('destroy'), fond, data: {:confirm => t('are_you_sure')}, :method => :delete) do |name| raw("<span class='muted' title='Per poter eliminare il complesso devi prima eliminare le unità collegate.'>#{name}</span>") end %>
+<%# Upgrade 2.0.0 fine %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+<%# Upgrade 2.0.0 inizio %>
+  <%#= will_paginate @fonds %>
+  <div class="digg_pagination">
+    <%= will_paginate @fonds, :container => false %>
+  </div>
+<%# Upgrade 2.0.0 fine %>
+
+  <% else %>
+    <% if params[:q].present? %>
+      <p>La ricerca di <strong><%= params[:q] %></strong> non ha prodotto risultati. Vedi <%= link_to "tutti i complessi archivistici", fonds_path %></p>
+    <% else %>
+      <p>Non sono presenti schede complesso archivistico.</p>
+    <% end %>
+  <% end %>
+<%# TODO: i18n per tutte le pagine index, a navigazione definita. Simile a config/locales/views/shared.yml no_related_records_available. Valutare se usare una sola key YAML %>
+</div>
+
+<div id="merge-with-container"></div>
+<div id="split-fond-container"></div>

@@ -1,0 +1,61 @@
+en:
+  groups: "Groups"
+  group: "Group"
+  index_groups: "Groups list"
+# Upgrade 2.0.0 inizio
+#  users_count: "Users count"
+  users_count: "Users count (active/total)"
+# Upgrade 2.0.0 fine
+  create_group: "Create group"
+# Upgrade 2.1.0 inizio
+  group_name: "Denominazione"
+  group_short_name: "Nome abbreviato"
+  group_site_caption: "Nome del sito"
+  group_description: "Descrizione"
+  group_credits_link_caption: "Etichetta per il link ai credits"
+  group_credits: "Credits"
+  group_carousel_images: "Immagini rappresentative del gruppo"
+  group_logo_images: "Loghi associati al gruppo"
+  # nomi dei campi
+  short_name: "Nome abbreviato"
+# Upgrade 2.1.0 fine
+# Upgrade 2.2.0 inizio
+  list_group_short_name: "Nome gruppo"
+# Upgrade 2.2.0 fine
+# Upgrade 3.0.0 inizio
+  published: "Published"
+  publish: "Publish"
+  unpublished: "Unpublished"
+  unpublish: "Unpublish"
+# Upgrade 3.0.0 fine
+
+it:
+  groups: "Gruppi"
+  group: "Gruppo"
+  index_groups: "Lista gruppi"
+# Upgrade 2.0.0 inizio
+#  users_count: "Numero utenti"
+  users_count: "Numero utenti (attivi/totali)"
+# Upgrade 2.0.0 fine
+  create_group: "Crea gruppo"
+# Upgrade 2.1.0 inizio
+  group_name: "Denominazione"
+  group_short_name: "Nome abbreviato"
+  group_site_caption: "Nome del sito"
+  group_description: "Descrizione"
+  group_credits_link_caption: "Etichetta per il link ai credits"
+  group_credits: "Credits"
+  group_carousel_images: "Immagini rappresentative del gruppo"
+  group_logo_images: "Loghi associati al gruppo"
+  # nomi dei campi
+  short_name: "Nome abbreviato"
+# Upgrade 2.1.0 fine
+# Upgrade 2.2.0 inizio
+  list_group_short_name: "Nome gruppo"
+# Upgrade 2.2.0 fine
+# Upgrade 3.0.0 inizio
+  published: "Pubblicato"
+  publish: "Pubblica"
+  unpublished: "Non pubblicato"
+  unpublish: "Rimuovi pubblicazione"
+# Upgrade 3.0.0 fine
