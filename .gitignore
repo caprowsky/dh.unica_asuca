@@ -51,3 +51,8 @@ node_modules/
 ################ Ignore configurations
 database.yml
 secrets.yml
+
+##### Ignore IDE
+.idea
+db/archimista*
+
