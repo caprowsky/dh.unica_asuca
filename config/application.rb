@@ -45,5 +45,8 @@ module SampleApp
     end
     # Upgrade 2.0.0 fine
 
+    #Modifico path 
+    #config.relative_url_root = '/asuca'
+
   end
 end
