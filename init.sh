@@ -13,5 +13,5 @@ sleep 10
 docker-compose stop;
 
 sleep 10
-docker-compose up;
+docker-compose up -d;
 
